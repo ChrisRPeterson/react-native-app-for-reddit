@@ -23,4 +23,51 @@ export default {
         });
     });
   },
+  getAccessToken: () => {
+    return new Promise((resolve, reject) => {
+      fetch('http://52.14.170.19:3000/access', {method: 'GET'})
+        .then(response => response.json())
+        .then(data => {
+          console.log(data.access_token);
+          resolve(data.access_token);
+        })
+        .catch(err => {
+          reject(err);
+        });
+    });
+  },
+  vote: (dir, id, token) => {
+    return new Promise((resolve, reject) => {
+      fetch(`https://oauth.reddit.com/api/vote?dir=${dir}&id=${id}&rank=2`, {
+        method: 'POST',
+        headers: {
+          Authorization: `bearer ${token}`,
+        },
+      })
+        // .then(response => response.json())
+        .then(data => {
+          console.log(data);
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    });
+  },
+  testToken: token => {
+    return new Promise((resolve, reject) => {
+      fetch('https://oauth.reddit.com/api/v1/me', {
+        method: 'GET',
+        headers: {
+          Authorization: `bearer ${token}`,
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          resolve(data);
+        })
+        .catch(err => {
+          reject(err);
+        });
+    });
+  },
 };

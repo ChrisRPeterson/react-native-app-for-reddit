@@ -1,10 +1,50 @@
-import React from 'react';
+import React, {useState, useContext} from 'react';
 import {View, Image, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
-import timeAgo from '../utils/time-ago';
 import kconvert from 'k-convert';
 
+import timeAgo from '../utils/time-ago';
+import API from '../utils/API';
+import {UserContext} from '../contexts/UserContext';
+
 const ListItem = ({post, handlePress}) => {
+  const {accessToken} = useContext(UserContext);
+  const [upvoted, setUpvoted] = useState(false);
+  const [downvoted, setDownvoted] = useState(false);
+
+  let upvoteColor = '#424242';
+  let downvoteColor = '#424242';
+
+  if (upvoted) {
+    upvoteColor = '#FF8b60';
+  }
+
+  if (downvoted) {
+    downvoteColor = '#9494FF';
+  }
+
+  const handleUpvote = () => {
+    if (!upvoted) {
+      setUpvoted(true);
+      setDownvoted(false);
+      API.vote(1, post.name, accessToken);
+    } else {
+      setUpvoted(false);
+      API.vote(0, post.name, accessToken);
+    }
+  };
+
+  const handleDownvote = () => {
+    if (!downvoted) {
+      setDownvoted(true);
+      setUpvoted(false);
+      API.vote(-1, post.name, accessToken);
+    } else {
+      setDownvoted(false);
+      API.vote(0, post.name, accessToken);
+    }
+  };
+
   return (
     <TouchableOpacity style={styles.listItem} onPress={() => handlePress(post)}>
       <View style={styles.listItemView}>
@@ -20,11 +60,18 @@ const ListItem = ({post, handlePress}) => {
         ) : null}
         <View style={styles.bottomBar}>
           <View style={styles.thumbsContainer}>
-            <Icon name="thumbs-up" size={20} color="#424242" />
+            <TouchableOpacity
+              onPress={() => {
+                handleUpvote();
+              }}>
+              <Icon name="thumbs-up" size={20} color={upvoteColor} />
+            </TouchableOpacity>
             <Text style={styles.smallPadding}>
               {kconvert.convertTo(post.ups)}
             </Text>
-            <Icon name="thumbs-down" size={20} color="#424242" />
+            <TouchableOpacity onPress={() => handleDownvote()}>
+              <Icon name="thumbs-down" size={20} color={downvoteColor} />
+            </TouchableOpacity>
           </View>
           <View style={styles.commentsContainer}>
             <Icon name="comment" size={20} color="#424242" />

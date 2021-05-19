@@ -1,16 +1,23 @@
+import 'react-native-gesture-handler';
 import React, {useEffect, useState} from 'react';
-import {View, Text, TextInput, StyleSheet, FlatList} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
 
-import Header from './components/Header';
-import ListItem from './components/ListItem';
+import HomeScreen from './components/HomeScreen';
 import PostScreen from './components/PostScreen';
-import Search from './components/Search';
+import LoginScreen from './components/LoginScreen';
 import API from './utils/API';
+import {CurrentPostContext} from './contexts/CurrentPostContext';
+import {UserContext} from './contexts/UserContext';
+
+const Stack = createStackNavigator();
 
 const App = () => {
   const [subredditQuery, setSubredditQuery] = useState('');
   const [posts, setPosts] = useState([]);
   const [currentPost, setCurrentPost] = useState(null);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [accessToken, setAccessToken] = useState(null);
 
   const handlePress = post => {
     setCurrentPost(post);
@@ -35,35 +42,20 @@ const App = () => {
     callGetFrontPage();
   }, []);
 
-  return currentPost ? (
-    <PostScreen currentPost={currentPost} setCurrentPost={setCurrentPost} />
-  ) : (
-    <View style={styles.container}>
-      <Header />
-      <Search
-        setSubredditQuery={setSubredditQuery}
-        subredditQuery={subredditQuery}
-        handleSubmission={handleSubmission}
-      />
-      <FlatList
-        data={posts}
-        renderItem={({item}) => (
-          <ListItem
-            post={item.data}
-            handlePress={handlePress}
-            setCurrentPost={setCurrentPost}
-          />
-        )}
-        keyExtractor={(item, index) => index.toString()}
-      />
-    </View>
+  return (
+    <NavigationContainer>
+      <CurrentPostContext.Provider value={{currentPost, setCurrentPost}}>
+        <UserContext.Provider
+          value={{loggedIn, setLoggedIn, accessToken, setAccessToken}}>
+          <Stack.Navigator initialRouteName="Home">
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Post Details" component={PostScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} />
+          </Stack.Navigator>
+        </UserContext.Provider>
+      </CurrentPostContext.Provider>
+    </NavigationContainer>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default App;

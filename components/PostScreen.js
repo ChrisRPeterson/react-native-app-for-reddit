@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import {
   View,
   FlatList,
@@ -13,12 +13,11 @@ import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import timeAgo from '../utils/time-ago';
 
 import Comment from './Comment';
+import {CurrentPostContext} from '../contexts/CurrentPostContext';
 
-const PostScreen = ({currentPost, setCurrentPost}) => {
+const PostScreen = () => {
+  const {currentPost} = useContext(CurrentPostContext);
   const [comments, setComments] = useState(null);
-  const handlePress = () => {
-    setCurrentPost(null);
-  };
 
   useEffect(() => {
     const url = `https://reddit.com/r/${currentPost.subreddit}/comments/${currentPost.id}.json`;
@@ -29,11 +28,9 @@ const PostScreen = ({currentPost, setCurrentPost}) => {
       });
   }, [currentPost]);
 
-  console.log(currentPost.url);
   return (
     <ScrollView>
       <View style={styles.container}>
-        <Button onPress={handlePress} title="Back" />
         {currentPost.post_hint === 'image' ? (
           <Image style={styles.image} source={{uri: currentPost.url}} />
         ) : null}
@@ -52,25 +49,9 @@ const PostScreen = ({currentPost, setCurrentPost}) => {
           </Text>
         </View>
         <Text style={styles.commentsHeader}>Comments</Text>
-        {/* {comments
-          ? comments.map(comment => {
-              <Comment
-                comment={comment.data}
-                handlePress={handlePress}
-                setCurrentPost={setCurrentPost}
-                id={comment.data.id}
-              />;
-            })
-          : null} */}
         <FlatList
           data={comments}
-          renderItem={({item}) => (
-            <Comment
-              comment={item.data}
-              handlePress={handlePress}
-              setCurrentPost={setCurrentPost}
-            />
-          )}
+          renderItem={({item}) => <Comment comment={item.data} />}
           keyExtractor={(item, index) => index.toString()}
         />
       </View>
