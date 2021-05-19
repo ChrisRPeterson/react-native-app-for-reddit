@@ -7,7 +7,11 @@ import {
   Image,
   Text,
   StyleSheet,
+  ScrollView,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/dist/FontAwesome';
+import timeAgo from '../utils/time-ago';
+
 import Comment from './Comment';
 
 const PostScreen = ({currentPost, setCurrentPost}) => {
@@ -27,40 +31,85 @@ const PostScreen = ({currentPost, setCurrentPost}) => {
 
   console.log(currentPost.url);
   return (
-    <View style={styles.header}>
-      <Button onPress={handlePress} title="Back" />
-      <Text style={styles.text}>{currentPost.title}</Text>
-      <Text
-        onPress={() => Linking.openURL(currentPost.url)}
-        style={styles.link}>
-        Open in browser
-      </Text>
-      {currentPost.post_hint === 'image' ? (
-        <Image style={styles.image} source={{uri: currentPost.url}} />
-      ) : null}
-      <Text>Comments</Text>
-      <FlatList
-        data={comments}
-        renderItem={({item}) => (
-          <Comment
-            comment={item.data}
-            handlePress={handlePress}
-            setCurrentPost={setCurrentPost}
-            id={item.data.id}
-          />
-        )}
-      />
-    </View>
+    <ScrollView>
+      <View style={styles.container}>
+        <Button onPress={handlePress} title="Back" />
+        {currentPost.post_hint === 'image' ? (
+          <Image style={styles.image} source={{uri: currentPost.url}} />
+        ) : null}
+        <View style={styles.infoContainer}>
+          <Text style={styles.subreddit}>r/{currentPost.subreddit}</Text>
+          <Text style={styles.author}>
+            Posted by u/{currentPost.author}
+            {' • '}
+            {timeAgo.format(new Date(currentPost.created_utc * 1000), 'mini')}
+          </Text>
+          <Text style={styles.text}>{currentPost.title}</Text>
+          <Text
+            onPress={() => Linking.openURL(currentPost.url)}
+            style={styles.link}>
+            Open in browser <Icon name="external-link" />
+          </Text>
+        </View>
+        <Text style={styles.commentsHeader}>Comments</Text>
+        {/* {comments
+          ? comments.map(comment => {
+              <Comment
+                comment={comment.data}
+                handlePress={handlePress}
+                setCurrentPost={setCurrentPost}
+                id={comment.data.id}
+              />;
+            })
+          : null} */}
+        <FlatList
+          data={comments}
+          renderItem={({item}) => (
+            <Comment
+              comment={item.data}
+              handlePress={handlePress}
+              setCurrentPost={setCurrentPost}
+            />
+          )}
+          keyExtractor={(item, index) => index.toString()}
+        />
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    // padding: 14,
+    backgroundColor: '#f8f8f8',
+    borderBottomWidth: 2,
+    borderColor: '#eee',
+  },
+  infoContainer: {
+    padding: 14,
+    backgroundColor: '#f8f8f8',
+    borderBottomWidth: 2,
+    borderColor: '#eee',
+  },
   image: {
-    width: 400,
+    marginTop: 14,
+    width: '100%',
     height: 400,
+    resizeMode: 'contain',
   },
   text: {
     fontSize: 20,
+  },
+  subreddit: {
+    fontWeight: 'bold',
+  },
+  author: {
+    color: '#424242',
+    paddingBottom: 10,
+  },
+  commentsHeader: {
+    padding: 14,
+    fontSize: 18,
   },
 });
 

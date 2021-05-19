@@ -4,14 +4,14 @@ import {View, Text, StyleSheet} from 'react-native';
 const Header = () => {
   return (
     <View style={styles.header}>
-      <Text style={styles.text}>Reddito</Text>
+      <Text style={styles.text}>Nomad for Reddit</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   header: {
-    height: 60,
+    height: 55,
     padding: 15,
     backgroundColor: 'tomato',
   },

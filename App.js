@@ -1,14 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, TextInput, StyleSheet, FlatList} from 'react-native';
+
 import Header from './components/Header';
 import ListItem from './components/ListItem';
 import PostScreen from './components/PostScreen';
-
-const CLIENT_ID = 'dRoUjIpIATA1KA';
-const SECRET_KEY = 'hNlawHgOYjsVLVv8RdeNdgWy_pDODQ';
+import Search from './components/Search';
+import API from './utils/API';
 
 const App = () => {
-  const [text, onChangeText] = useState('');
+  const [subredditQuery, setSubredditQuery] = useState('');
   const [posts, setPosts] = useState([]);
   const [currentPost, setCurrentPost] = useState(null);
 
@@ -16,29 +16,23 @@ const App = () => {
     setCurrentPost(post);
   };
 
-  const handleSubmission = () => {
-    if (text === '') {
-      fetch('https://reddit.com/best.json', {method: 'GET'})
-        .then(response => response.json())
-        .then(data => {
-          setPosts(data.data.children);
-        });
+  const handleSubmission = async () => {
+    if (subredditQuery === '') {
+      const response = await API.getFrontPage();
+      setPosts(response);
     } else {
-      fetch(`https://reddit.com/r/${text}.json`, {method: 'GET'})
-        .then(response => response.json())
-        .then(data => {
-          setPosts(data.data.children);
-        });
-      onChangeText('');
+      const response = await API.getBestOfSubreddit(subredditQuery);
+      setPosts(response);
+      setSubredditQuery('');
     }
   };
 
   useEffect(() => {
-    fetch('https://reddit.com/best.json', {method: 'GET'})
-      .then(response => response.json())
-      .then(data => {
-        setPosts(data.data.children);
-      });
+    const callGetFrontPage = async () => {
+      const response = await API.getFrontPage();
+      setPosts(response);
+    };
+    callGetFrontPage();
   }, []);
 
   return currentPost ? (
@@ -46,12 +40,10 @@ const App = () => {
   ) : (
     <View style={styles.container}>
       <Header />
-      <TextInput
-        style={styles.searchField}
-        onChangeText={onChangeText}
-        value={text}
-        placeholder="Search"
-        onSubmitEditing={handleSubmission}
+      <Search
+        setSubredditQuery={setSubredditQuery}
+        subredditQuery={subredditQuery}
+        handleSubmission={handleSubmission}
       />
       <FlatList
         data={posts}
@@ -60,9 +52,9 @@ const App = () => {
             post={item.data}
             handlePress={handlePress}
             setCurrentPost={setCurrentPost}
-            id={item.data.id}
           />
         )}
+        keyExtractor={(item, index) => index.toString()}
       />
     </View>
   );
@@ -71,11 +63,6 @@ const App = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  searchField: {
-    borderColor: '#121212',
-    // borderWidth: 2,
-    backgroundColor: '#d3d3d3',
   },
 });
 
